@@ -1,0 +1,8 @@
+<form id="sklad_filters" action="/index/createDoc" method="post">
+    <input type="text" id="date_begin" name="date[begin]" placeholder="Начало интервала" readonly>
+    <input type="text" id="date_end" name="date[end]" placeholder="Конец интервала" readonly>
+    <input type="text" id="sklad_id" name="warehouseId" placeholder="ID склада" >
+    <input type="text" hidden value="{{ docId }}" name="docId">
+    <button type="submit">Получить выгрузку</button>
+</form>
+<script src="/public/js/skladFilters.js"></script>

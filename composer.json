@@ -1,0 +1,16 @@
+{
+  "name": "vendor_name/test",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Ilya Ivanov",
+      "email": "ivanov69.ezg@gamil.com"
+    }
+  ],
+  "require": {
+    "twig/twig": "^3.0",
+    "phpoffice/phpspreadsheet": "^1.21"
+  }
+}
