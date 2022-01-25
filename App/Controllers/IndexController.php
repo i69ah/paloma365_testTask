@@ -100,7 +100,7 @@ class IndexController extends Controller
 
         $spreadsheet = (new WarehouseReportXlsService())->getXls($rows);
         $writer = new Xlsx($spreadsheet);
-        $fileName = (new \DateTimeImmutable())->format('Ymd_Hisv_') . "warehouseReport_$warehouseId";
+        $fileName = (new \DateTimeImmutable())->format('Ymd_Hisv_') . "report";
         $fileName = "temp/$fileName.xlsx";
         $writer->save($fileName);
 
