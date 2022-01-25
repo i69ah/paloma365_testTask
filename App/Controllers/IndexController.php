@@ -4,6 +4,9 @@ namespace App\Controllers;
 
 use App\Repositories\Db;
 use App\Repositories\DocumentQueryRepository;
+use App\Services\AttributeValidatorService;
+use App\Services\FiltersService;
+use App\Services\FormBuilderService;
 use App\Services\WarehouseReportXlsService;
 use PhpOffice\PhpSpreadsheet\Writer\Exception;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -39,11 +42,12 @@ class IndexController extends Controller
      * Возвращает вьюху с формой
      *
      * @param Environment $twig
+     * @param Db $db
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function actionGetDocFilters(Environment $twig)
+    public function actionGetDocFilters(Environment $twig, Db $db)
     {
         $docId = $_GET['docId'] ?? null;
         if (null === $docId) {
@@ -51,9 +55,13 @@ class IndexController extends Controller
             return;
         }
 
-        echo $twig->render("filters_$docId.twig", [
-            'docId' => $docId
-        ]);
+        $documentQueryRepository = new DocumentQueryRepository($db);
+        $documentQuery = $documentQueryRepository->findByPk((int)$docId);
+        $filtersArray = (new FiltersService())->checkTypes($documentQuery->getFilters(), $db);
+        $formArray = (new FormBuilderService())->buildFormFields($filtersArray, $twig);
+        $formArray[] = (new FormBuilderService())->buildHiddenInput('docId', $docId, $twig);
+
+        echo $twig->render("formTemplate.twig", [ 'formArray' => $formArray ]);
     }
 
     /**
@@ -65,32 +73,30 @@ class IndexController extends Controller
      */
     public function actionCreateDoc(Environment $twig, Db $db)
     {
-        $beginDate = $_POST['date']['begin'] ?? null;
-        $endDate = $_POST['date']['end'] ?? null;
-        $warehouseId = $_POST['warehouseId'] ?? null;
         $docId = $_POST['docId'] ?? null;
-
-        if (!isset($beginDate, $endDate, $warehouseId, $docId)) {
-            echo 'Некорректный запрос на страницу. Один из параметров (date["begin"], date["end"], warehouseId, docId)';
+        if (null === $docId) {
+            echo 'Не передан параметр docId';
             return;
         }
 
-        $beginDate = \DateTimeImmutable::createFromFormat('d.m.Y H:i', $beginDate);
-        $endDate = \DateTimeImmutable::createFromFormat('d.m.Y H:i', $endDate);
-        if (false === $beginDate && false === $endDate) {
+        $documentQueryRepository = new DocumentQueryRepository($db);
+        $documentQuery = $documentQueryRepository->findByPk((int)$docId);
+        $filtersArray = (new FiltersService())->checkTypes($documentQuery->getFilters(), $db);
+        $filterNamesArray = array_flip($filtersArray);
+        if (!(new AttributeValidatorService())->validatePostAttributes($filtersArray, $_POST)) {
+            echo 'Некорректный запрос на страницу. Один из параметров ' . implode(', ', $filterNamesArray);
+            return;
+        }
+
+        if (!(new AttributeValidatorService())->validateDateFormat($filtersArray, $_POST)) {
             echo 'Неверный формат времени. Требуется формат d.m.Y H:i';
             return;
         }
 
-        $documentRepository = new DocumentQueryRepository($db);
-        $docModel = $documentRepository->findByPk((int)$docId);
-        $sql = $docModel->getQueryString();
+        $sql = $documentQuery->getQueryString();
+        $data = (new FiltersService())->buildParamsArray($filtersArray, $_POST);
 
-        $rows = $db->query($sql, null, [
-            ':beginDate' => $beginDate->format('Y-m-d H:i:s'),
-            ':endDate' => $endDate->format('Y-m-d H:i:s'),
-            ':warehouseId' => $warehouseId,
-        ]);
+        $rows = $db->query($sql, null, $data);
 
         $spreadsheet = (new WarehouseReportXlsService())->getXls($rows);
         $writer = new Xlsx($spreadsheet);

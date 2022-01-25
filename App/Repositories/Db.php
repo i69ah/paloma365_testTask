@@ -69,4 +69,24 @@ class Db
 
         return $sth->fetchAll(\PDO::FETCH_CLASS, $class);
     }
+
+    /**
+     * @param string $sql
+     * @param array $params
+     * @return string
+     * @throws Exception
+     */
+    public function fetchColumn(string $sql, array $params=[]): string
+    {
+        if (empty($sql)) {
+            throw new Exception('Пустой sql запрос');
+        }
+        $sth = $this->dbh->prepare($sql);
+
+        if (!$sth->execute($params)) {
+            throw new Exception('Error executing sql query: ' . $sth->errorCode());
+        }
+
+        return $sth->fetchColumn();
+    }
 }
