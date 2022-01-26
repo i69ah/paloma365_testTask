@@ -64,7 +64,7 @@ class Db
         }
 
         if (null === $class) {
-            return $sth->fetchAll();
+            return $sth->fetchAll(\PDO::FETCH_ASSOC);
         }
 
         return $sth->fetchAll(\PDO::FETCH_CLASS, $class);

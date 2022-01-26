@@ -23,16 +23,17 @@ class WarehouseReportXlsService
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-
-        $sheet->setCellValueByColumnAndRow(1, 1, 'id');
-        $sheet->setCellValueByColumnAndRow(2, 1, 'created_at');
-        $sheet->setCellValueByColumnAndRow(3, 1, 'warehouse_id');
+        foreach ($data['headers'] as $key => $header) {
+            $sheet->setCellValueByColumnAndRow($key + 1, 1, $header);
+        }
 
         $row = 2;
-        foreach ($data as $element) {
-            $sheet->setCellValueByColumnAndRow(1, $row, $element['id']);
-            $sheet->setCellValueByColumnAndRow(2, $row, $element['created_at']);
-            $sheet->setCellValueByColumnAndRow(3, $row, $element['warehouse_id']);
+        foreach ($data['rows'] as $element) {
+            $column = 1;
+            foreach ($element as $value) {
+                $sheet->setCellValueByColumnAndRow($column++, $row, $value);
+            }
+
             $row++;
         }
 

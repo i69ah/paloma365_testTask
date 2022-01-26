@@ -10,7 +10,7 @@ class FiltersService
 {
     public function checkTypes(string $filters, Db  $db): array
     {
-        $sql = 'SELECT `DATA_TYPE` FROM `information_schema`.`COLUMNS` 
+        $sql = 'SELECT `DATA_TYPE` AS `type`, `COLUMN_COMMENT` AS `comment` FROM `information_schema`.`COLUMNS` 
                 WHERE `TABLE_SCHEMA`=:schema AND `TABLE_NAME`=:table AND `COLUMN_NAME`=:column';
         $schema = 'paloma365';
         $filtersArray = explode(',', $filters);
@@ -19,12 +19,12 @@ class FiltersService
             $filterArray = explode('.', $rawFilter);
             $table = $filterArray[0];
             $column = $filterArray[1];
-            $type = $db->fetchColumn($sql, [
+            $typeAndComment = $db->query($sql, null, [
                 ':schema' => $schema,
                 ':table' => $table,
                 ':column' => $column,
             ]);
-            $result[$column] = $type;
+            $result[$column] = $typeAndComment;
         }
 
         return $result;
@@ -33,8 +33,9 @@ class FiltersService
     public function buildParamsArray(array $filters, array $postData): array
     {
         $result = [];
-        foreach ($filters as $filter => $type) {
-            if ('datetime' === $type) {
+        foreach ($filters as $filter => $typeAndCommentRaw) {
+            $typeAndComment = $typeAndCommentRaw[0];
+            if ('datetime' === $typeAndComment['type']) {
                 $dateBegin = \DateTimeImmutable::createFromFormat('d.m.Y H:i',$postData[$filter]['begin']);
                 $dateEnd = \DateTimeImmutable::createFromFormat('d.m.Y H:i', $postData[$filter]['end']);
 
@@ -50,5 +51,16 @@ class FiltersService
         }
 
         return $result;
+    }
+
+    public function buildHeadersArray(array $filters) :array
+    {
+        $headers = ['#'];
+        foreach ($filters as $filter => $typeAndCommentRaw) {
+            $typeAndComment = $typeAndCommentRaw[0];
+            $headers[] = $typeAndComment['comment'];
+        }
+
+        return $headers;
     }
 }

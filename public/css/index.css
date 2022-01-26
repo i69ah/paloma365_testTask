@@ -5,6 +5,19 @@
     align-items: center;
     height: max-content;
 }
-#getFiltersBtn {
+.getFiltersBtn {
     margin-top: 200px;
+}
+
+table {
+    margin-top: 150px;
+    border: 1px solid gray;
+}
+
+th {
+    border: 1px solid grey;
+}
+
+td {
+    border: 1px solid grey;
 }

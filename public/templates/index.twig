@@ -16,10 +16,15 @@
 </head>
 <body>
 <div class="container">
-    <div class="filters">
+    <div id="filters">
         <!-- сюда придёт template с фильтрами -->
     </div>
-    <button type="button" id="getFiltersBtn" datafld="{{ docId }}">Показать филтры</button>
+    <div id="table">
+        <!-- сюда придёт template с таблицой -->
+    </div>
+    {% for txt in data %}
+    <button type="button" class="getFiltersBtn" datafld="{{ loop.index }}">{{ txt }}</button>
+    {% endfor %}
 </div>
 </body>
 <script src="/public/js/getFilters.js"></script>

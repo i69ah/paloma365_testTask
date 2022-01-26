@@ -21,4 +21,22 @@
         formatDate:'DD.MM.YYYY'
     })
 
+    $('#postForm').submit(function (event) {
+        event.preventDefault()
+        let data = {}
+        let form = $(this)
+        $('[form=postForm]').each(function (index, element) {
+            element = $(element)
+            data[element.attr('name')] = element.val();
+
+        })
+        $.ajax(form.attr('action'), {
+            method: form.attr('method'),
+            data,
+            success: function(response) {
+                $('#table').append(response)
+            }
+        })
+        // console.log(data)
+    })
 </script>

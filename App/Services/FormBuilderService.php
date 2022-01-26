@@ -11,9 +11,10 @@ class FormBuilderService
     public function buildFormFields(array $filters, Environment $twig): array
     {
         $result = [];
-        foreach ($filters as $filter => $type) {
-            $data = [ 'field' => $filter ];
-            switch ($type) {
+        foreach ($filters as $filter => $typeAndCommentRaw) {
+            $typeAndComment = $typeAndCommentRaw[0];
+            $data = [ 'field' => $filter, 'comment' => $typeAndComment['comment']];
+            switch ($typeAndComment['type']) {
                 case 'datetime':
                     $result[] = $twig->render('datetimeFilter.twig', $data);
                     break;
